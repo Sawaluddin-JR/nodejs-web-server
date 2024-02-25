@@ -6,26 +6,68 @@ const requestListener = (request, response) => {
   response.setHeader("Content-Type", "text/html");
   response.statusCode = 200;
 
-  const method = request.method;
+  //const method = request.method;
+  const { method, url } = request;
 
-  if (method === "GET") {
-    response.end("<h1>Hallo</h1>");
+  if (url === "/") {
+    if (method === "GET") {
+      response.end("<h1>Hallo</h1>");
+    }
+
+    if (method === "POST") {
+      let body = [];
+
+      request.on("data", (chunk) => {
+        body.push(chunk);
+      });
+
+      request.on("end", () => {
+        body = Buffer.concat(body).toString();
+
+        //untuk mengubah JSON JavaScript ke JavaScript objek
+        const { name } = JSON.parse(body);
+        response.end(`<h1>Hai,${name}!</h1>`);
+      });
+
+      //response.end("<h1>Hai</h1>");
+    }
   }
 
-  if (method === "POST") {
-    let body = [];
+  if (url === "/about") {
+  }
 
-    request.on("data", (chunk) => {
-      body.push(chunk);
-    });
+  //-------------------------------------------------
 
-    request.on("end", () => {
-      body = Buffer.concat(body).toString();
-      const { name } = JSON.parse(body);
-      response.end(`<h1>Hai,${name}!</h1>`);
-    });
+  if (url === "/") {
+    if (method === "GET") {
+      response.end("<h1>Ini adalah home page</h1>");
+    } else {
+      response.end(
+        `<h1>Halaman tidak dapata diakses dengan${method} request</h1>`
+      );
+    }
+  } else if (url === "/about") {
+    if (method === "GET") {
+      response.end("<h1>Halo !,ini adalah halaman about</h1>");
+    } else if (method === "POST") {
+      let body = [];
 
-    //response.end("<h1>Hai</h1>");
+      request.on("data", (chunk) => {
+        body.push(chunk);
+      });
+
+      request.on("end", () => {
+        body = Buffer.concat(body).toString();
+        const { name } = JSON.parse(body);
+        response.end(`<h1>Halo ${name}!,ini adalah halaman about`);
+      });
+    } else {
+      response.end(
+        `<h1>Halaman tidak dapat diakses menggunakan ${method} request</h1>`
+      );
+    }
+  } else {
+    response.end("<h1>Halaman ini tidak ditemukan!</h1>");
   }
 };
 
